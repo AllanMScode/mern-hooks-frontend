@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import LoginPage from "../pages/LoginPage";
+import RequireAuth from "../pages/RequireAuth";
+import SignupPage from "../pages/SignupPage";
+import LogoutPage from "../pages/LogoutPage";
 
 function App() {
   // state to store our notes
@@ -27,9 +32,7 @@ function App() {
   // function that fetches our notes
   const fetchNotes = async () => {
     // Fetch the notes
-    const responseFromBackend = await axios.get(
-      "http://localhost:8080/get-all-notes"
-    ); // the function is not running yet. we want the function to run as soon as the app starts up, so we do that in a useEffect (react hook).
+    const responseFromBackend = await axios.get("/get-all-notes"); // the function is not running yet. we want the function to run as soon as the app starts up, so we do that in a useEffect (react hook).
 
     // Set it on state (update the value of notes)
     setNotes(responseFromBackend.data.notes); // setNotes will update the value of notes from null to the current array of notes
@@ -68,7 +71,7 @@ function App() {
     // Create the note
     const responseFromBackend = await axios.post(
       // the 2 arguments are: the link to post the values, the values to be sent for post method
-      "http://localhost:8080/create-note",
+      "/create-note",
       createForm
     );
 
@@ -89,7 +92,7 @@ function App() {
     // the argument should be equal to the id of the note we're deleting
     // Deiete the note
     const responseFromBackend = await axios.delete(
-      `http://localhost:8080/delete-note/${idOfTheNoteToBeDeleted}`
+      `/delete-note/${idOfTheNoteToBeDeleted}`
     );
     console.log(responseFromBackend);
 
@@ -139,7 +142,7 @@ function App() {
 
     // Send the update request
     const responseFromBackend = await axios.put(
-      `http://localhost:8080/update-note/${updateForm._id}`,
+      `/update-note/${updateForm._id}`,
       {
         title: newUpdatedNoteTitle,
         body: newUpdatedNoteBody,
@@ -169,79 +172,107 @@ function App() {
 
   return (
     <div className="App">
-      {/* Displaying all the notes */}
-      <div className="">
-        <h2>Notes:</h2>
-        {/* rendering an array of notes. It starts as null, so we gotta check if notes exist before we render. */}
-        {notes &&
-          notes.map((note) => {
-            return (
-              <div key={note._id}>
-                <h3>{note.title}</h3>
-                {/* <button onClick={deleteNote(note._id)}>Delete note</button>  */}
-                {/* the above line of code would run instantly, so we use the below line of code so that it doesn't run ultil we click it. If clicked, it will run the function & pass the note._id to it */}
-                <button onClick={() => deleteNote(note._id)}>
-                  Delete note
-                </button>
-                <button onClick={() => toggleUpdate(note)}>Update note</button>
-              </div>
-            );
-          })}
-      </div>
+      <BrowserRouter>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/login">Login</Link>
+          </li>
+          <li>
+            <Link to="/signup">Signup</Link>
+          </li>
+          <li>
+            <Link to="/logout">Logout</Link>
+          </li>
+        </ul>
 
-      <br />
+        <Routes>
+          <Route path="/" />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
+        </Routes>
 
-      {/* Form for updating a note */}
+        <RequireAuth>
+          {/* Displaying all the notes */}
+          <div className="">
+            <h2>Notes:</h2>
+            {/* rendering an array of notes. It starts as null, so we gotta check if notes exist before we render. */}
+            {notes &&
+              notes.map((note) => {
+                return (
+                  <div key={note._id}>
+                    <h3>{note.title}</h3>
+                    {/* <button onClick={deleteNote(note._id)}>Delete note</button>  */}
+                    {/* the above line of code would run instantly, so we use the below line of code so that it doesn't run ultil we click it. If clicked, it will run the function & pass the note._id to it */}
+                    <button onClick={() => deleteNote(note._id)}>
+                      Delete note
+                    </button>
+                    <button onClick={() => toggleUpdate(note)}>
+                      Update note
+                    </button>
+                  </div>
+                );
+              })}
+          </div>
 
-      {/* if updateForm._id exists (if it's not null), render the update note form */}
-      {updateForm._id && (
-        <div>
-          <h2>Update note</h2>
-          <form onSubmit={updateNote}>
-            <input
-              onChange={handleUpdateFieldChange}
-              value={updateForm.title}
-              type="text"
-              name="title"
-            />
-            <br />
-            <textarea
-              onChange={handleUpdateFieldChange}
-              value={updateForm.body}
-              name="body"
-              id=""></textarea>
-            <br />
-            <button type="submit">Update note</button>
-          </form>
-        </div>
-      )}
+          <br />
 
-      <br />
+          {/* Form for updating a note */}
 
-      {/* Form for creating a note */}
+          {/* if updateForm._id exists (if it's not null), render the update note form */}
+          {updateForm._id && (
+            <div>
+              <h2>Update note</h2>
+              <form onSubmit={updateNote}>
+                <input
+                  onChange={handleUpdateFieldChange}
+                  value={updateForm.title}
+                  type="text"
+                  name="title"
+                />
+                <br />
+                <textarea
+                  onChange={handleUpdateFieldChange}
+                  value={updateForm.body}
+                  name="body"
+                  id=""></textarea>
+                <br />
+                <button type="submit">Update note</button>
+              </form>
+            </div>
+          )}
 
-      {/* if updateForm._id doesn't exist (if it's null), render the create note form */}
-      {!updateForm._id && (
-        <div>
-          <h2>Create Note</h2>
-          <form onSubmit={createNote}>
-            <input
-              onChange={updateCreateFormField} // when the user types, the function will run to update the value
-              value={createForm.title} // the value will depend on whether the createForm value is changed or not
-              type="text"
-              name="title"
-            />
-            <br />
-            <textarea
-              onChange={updateCreateFormField}
-              value={createForm.body}
-              name="body"
-              id=""></textarea>
-            <br />
-            <button type="submit">Create note</button>
-          </form>
-        </div>
-      )}
+          <br />
+
+          {/* Form for creating a note */}
+
+          {/* if updateForm._id doesn't exist (if it's null), render the create note form */}
+          {!updateForm._id && (
+            <div>
+              <h2>Create Note</h2>
+              <form onSubmit={createNote}>
+                <input
+                  onChange={updateCreateFormField} // when the user types, the function will run to update the value
+                  value={createForm.title} // the value will depend on whether the createForm value is changed or not
+                  type="text"
+                  name="title"
+                />
+                <br />
+                <textarea
+                  onChange={updateCreateFormField}
+                  value={createForm.body}
+                  name="body"
+                  id=""></textarea>
+                <br />
+                <button type="submit">Create note</button>
+              </form>
+            </div>
+          )}
+        </RequireAuth>
+      </BrowserRouter>
     </div>
   );
 }
