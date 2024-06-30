@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Navigate, Router } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const RequireAuth = (props) => {
   // State to hold logged in status
@@ -33,11 +33,7 @@ const RequireAuth = (props) => {
   }
 
   if (loggedIn === false) {
-    return;
-
-    <Router>
-      <Navigate to="/login" />
-    </Router>;
+    return <Navigate to="/login" />;
   }
 
   return <div>{props.children}</div>; // whatever we put in between <RequireAuth></RequireAuth> get assigned to props.children

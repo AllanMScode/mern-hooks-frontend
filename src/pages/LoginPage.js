@@ -44,6 +44,9 @@ const LoginPage = () => {
     e.preventDefault();
 
     await login();
+
+    alert("You are now logged in");
+
     // Navigate to homepage
     navigate("/");
   };
